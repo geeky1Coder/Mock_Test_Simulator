@@ -156,6 +156,21 @@
         const numQuestions = <%= numQuestions %>;
         const timeLimit = <%= timeLimit %>; 
         const startTime=<%= startTime %>;
+        
+        // Create a web worker
+        const worker = new Worker('../timeWorker.js');
+        console.log(worker);
+        // Message handler for updates from the worker
+        worker.onmessage = function(event) {
+            const data = event.data;
+            if (data.type === 'timer') {
+                document.getElementById('timer').textContent = data.time;
+            } else if (data.type === 'timeUp') {
+                alert('Time is up!');
+                saveReport();
+                lockScreen();
+            }
+        };
 
         // Function to save questionnaire data as JSON
         // Function to append a question item to the questionnaire form
@@ -275,33 +290,6 @@
         // Append save button to the body
         document.body.appendChild(saveButton);
 
-        // Function to start and update the timer
-        function startTimer() {
-            var timerElement = document.getElementById('timer');
-            var initialTime = timeLimit * 60;
-            var timer = setInterval(function() {
-                initialTime--;
-
-                var hours = Math.floor(initialTime / 3600);
-                var minutes = Math.floor((initialTime % 3600) / 60);
-                var seconds = initialTime % 60;
-
-                var formattedTime = 
-                    (hours < 10 ? '0' : '') + hours + ':' +
-                    (minutes < 10 ? '0' : '') + minutes + ':' +
-                    (seconds < 10 ? '0' : '') + seconds;
-
-                timerElement.textContent = formattedTime;
-
-                if (initialTime <= 0) {
-                    clearInterval(timer);
-                    alert('Time is up!');
-                    saveReport();
-                    lockScreen();
-                }
-            }, 1000);
-        }
-
         // Function to lock the screen and disable inputs
         function lockScreen() {
             const form = document.getElementById('questionnaire');
@@ -313,7 +301,12 @@
         }
 
         // Start the timer when the page loads
-        startTimer();
+        worker.postMessage({
+            action: 'start',
+            timeLimit: timeLimit,
+            startTime: startTime
+        });
+
     </script>
 </body>
 </html>
