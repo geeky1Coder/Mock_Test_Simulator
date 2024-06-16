@@ -6,7 +6,6 @@ Mock Test Simulator is a Python-based application designed to simulate mock test
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Project Structure](#project-structure)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -35,20 +34,6 @@ To run the Mock Test Simulator locally, follow these steps:
 
 ## Usage
 After starting the server, open your web browser and go to http://localhost:3000 to access the Mock Test Simulator. Follow the on-screen instructions to create and take a mock test.
-
-## Project Structure
-Here's a brief overview of the project's structure:
-
-Mock_Test_Simulator/
-├── public/
-│   ├── css/
-│   └── js/
-├── views/
-│   ├── index.ejs
-│   └── test.ejs
-├── server.js
-├── package.json
-└── README.md
 
 ## Contributing
 Contributions are welcome! Please follow these steps:
