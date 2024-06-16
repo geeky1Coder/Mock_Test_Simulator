@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionnaire</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            background-color: #444;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .question h3 {
+            margin: 0 0 10px 0;
+            color: #fff;
+        }
+
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .options li {
+            margin-bottom: 12px;
+        }
+
+        .fill-in-blank {
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .save-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            width: 340px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            font-weight: bold;
+            margin: 10px;
+        }
+
+        .save-button:hover {
+            background-color: #777;
+            transition: all 0.1s ease-in-out;
+        }
+
+        .save-button:active {
+            background-color: #333;
+        }
+
+        .headerTimer {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 10px 20px;
+            background-color: #222;
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: calc(100% - 30px);
+            z-index: 1000;
+            transition: background-color 0.3s ease;
+        }
+
+        .timer {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 20px;
+            border: 2px dotted white;
+            padding: 10px;
+        }
+
+        #questionnaire {
+            padding-top: 120px;
+        }
+
+        /* Custom Radio Button Styles */
+        input[type="radio"] {
+            display: none;
+        }
+
+        input[type="radio"] + label {
+            position: relative;
+            padding-left: 35px;
+            cursor: pointer;
+            line-height: 20px;
+            display: inline-block;
+            color: #fff;
+        }
+
+        input[type="radio"] + label:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #bbb;
+            border-radius: 50%;
+            background: #444;
+        }
+
+        input[type="radio"]:checked + label:before {
+            border-color: #4CAF50;
+            background-color: #4CAF50;
+        }
+
+        input[type="radio"]:checked + label:after {
+            content: "\2714"; /* Unicode character for a check mark */
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        /* Lock screen styles */
+        .locked {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header section with title and timer -->
+    <div class="headerTimer">
+        <h2>Quant Mock</h2>
+        <div class="timer" id="timer">00:00:00</div>
+    </div>
+
+    <!-- Form section for questionnaire -->
+    <form id="questionnaire">
+        <!-- JavaScript will dynamically generate questions here -->
+    </form>
+
+    <!-- JavaScript for generating questions and handling save button -->
+    <script>
+        const numQuestions = <%= numQuestions %>;
+        const timeLimit = <%= timeLimit %>; 
+        const startTime=<%= startTime %>;
+
+        // Function to save questionnaire data as JSON
+        // Function to append a question item to the questionnaire form
+        function saveReport() {
+            const form = document.getElementById('questionnaire');
+            const formData = new FormData(form);
+            const report = {};
+
+            for (let i = 1; i <= numQuestions; i++) {
+                const questionKey = `q${i}`;
+                const fillInKey = `${questionKey}_blank`;
+
+                const selectedOption = formData.get(questionKey);
+                const fillInValue = formData.get(fillInKey);
+
+                if (selectedOption) {
+                    report[`${questionKey}_Single_MCQ`] = selectedOption;
+                } else if (fillInValue) {
+                    report[`${questionKey}_TITA`] = fillInValue;
+                } else {
+                    report[questionKey] = 'Not attempted';
+                }
+            }
+
+            const endTime = Math.floor(Date.now() / 1000);
+            const duration = endTime - startTime; 
+            report['test_duration_seconds'] = duration;
+
+            // Create a JSON blob and initiate download
+            const reportJSON = JSON.stringify(report, null, 2);
+            const blob = new Blob([reportJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'report.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function appendListItem(questionNumber) {
+            const ul = document.querySelector('#questionnaire');
+
+            let questionDiv = document.createElement('div');
+            questionDiv.className = 'question';
+
+            let questionTitle = document.createElement('h3');
+            questionTitle.textContent = `Question ${questionNumber}?`;
+            questionDiv.appendChild(questionTitle);
+
+            let optionsList = document.createElement('ul');
+            optionsList.className = 'options';
+
+            let options = ['Option 1', 'Option 2', 'Option 3', 'Option 4'];
+
+            options.forEach((option, index) => {
+                let listItem = document.createElement('li');
+                let radioButton = document.createElement('input');
+                radioButton.type = 'radio';
+                radioButton.id = `q${questionNumber}_option${index + 1}`;
+                radioButton.name = `q${questionNumber}`;
+                radioButton.value = `option${index + 1}`;
+                let label = document.createElement('label');
+                label.htmlFor = radioButton.id;
+                label.appendChild(document.createTextNode(option));
+                listItem.appendChild(radioButton);
+                listItem.appendChild(label);
+                optionsList.appendChild(listItem);
+            });
+
+            // Add a deselect option
+            let listItem = document.createElement('li');
+            let radioButton = document.createElement('input');
+            radioButton.type = 'radio';
+            radioButton.id = `q${questionNumber}_none`;
+            radioButton.name = `q${questionNumber}`;
+            radioButton.value = '';
+            let label = document.createElement('label');
+            label.htmlFor = radioButton.id;
+            label.appendChild(document.createTextNode('Deselect'));
+            listItem.appendChild(radioButton);
+            listItem.appendChild(label);
+            optionsList.appendChild(listItem);
+
+            questionDiv.appendChild(optionsList);
+
+            let fillInBlankDiv = document.createElement('div');
+            fillInBlankDiv.className = 'fill-in-blank';
+            let fillInBlankLabel = document.createElement('label');
+            fillInBlankLabel.textContent = 'Or fill in: ';
+            let fillInBlankInput = document.createElement('input');
+            fillInBlankInput.type = 'number';
+            fillInBlankInput.name = `q${questionNumber}_blank`;
+            fillInBlankLabel.appendChild(fillInBlankInput);
+            fillInBlankDiv.appendChild(fillInBlankLabel);
+            questionDiv.appendChild(fillInBlankDiv);
+
+            ul.appendChild(questionDiv);
+        }
+
+        // Generate question items dynamically
+        for (let i = 0; i < numQuestions; ++i) {
+            appendListItem(i + 1);
+        }
+
+        // Create and append save button dynamically
+        let saveButton = document.createElement('button');
+        saveButton.type = 'button';
+        saveButton.className = 'save-button';
+        saveButton.textContent = 'Save';
+
+        // Set onclick event handler for save button
+        saveButton.onclick = function() {
+            saveReport();
+        };
+
+        // Append save button to the body
+        document.body.appendChild(saveButton);
+
+        // Function to start and update the timer
+        function startTimer() {
+            var timerElement = document.getElementById('timer');
+            var initialTime = timeLimit * 60;
+            var timer = setInterval(function() {
+                initialTime--;
+
+                var hours = Math.floor(initialTime / 3600);
+                var minutes = Math.floor((initialTime % 3600) / 60);
+                var seconds = initialTime % 60;
+
+                var formattedTime = 
+                    (hours < 10 ? '0' : '') + hours + ':' +
+                    (minutes < 10 ? '0' : '') + minutes + ':' +
+                    (seconds < 10 ? '0' : '') + seconds;
+
+                timerElement.textContent = formattedTime;
+
+                if (initialTime <= 0) {
+                    clearInterval(timer);
+                    alert('Time is up!');
+                    saveReport();
+                    lockScreen();
+                }
+            }, 1000);
+        }
+
+        // Function to lock the screen and disable inputs
+        function lockScreen() {
+            const form = document.getElementById('questionnaire');
+            const inputs = form.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+            form.classList.add('locked');
+        }
+
+        // Start the timer when the page loads
+        startTimer();
+    </script>
+</body>
+</html>
