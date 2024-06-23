@@ -1,6 +1,6 @@
 # Mock Test Simulator
 
-Mock Test Simulator is a Python-based application designed to simulate mock tests. This tool allows users to create, manage, and take mock tests for various subjects, providing an interactive and user-friendly interface.
+Mock Test Simulator is a JS-based application designed to simulate mock tests. This tool allows users to create, manage, and take mock tests for various subjects, providing an interactive and user-friendly interface.
 
 ## Table of Contents
 - [Features](#features)
